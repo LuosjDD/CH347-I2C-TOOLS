@@ -21,9 +21,12 @@ target_link_libraries(i2cget "${CMAKE_SOURCE_DIR}/ch341par/amd64/CH347DLLA64.lib
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_custom_command(TARGET i2cset POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/ch341par/CH347DLL.DLL"
-        $<TARGET_FILE_DIR:i2cset>
-    COMMENT "Copying CH347DLL.DLL to output directory"
-)
+# Copy 64-bit CH347 DLL to output directory for each tool
+foreach(tool i2cset i2cdump i2cdetect i2ctransfer i2cget)
+    add_custom_command(TARGET ${tool} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_SOURCE_DIR}/ch341par/CH347DLLA64.DLL"
+            $<TARGET_FILE_DIR:${tool}>
+        COMMENT "Copying CH347DLLA64.DLL to output directory for ${tool}"
+    )
+endforeach()
