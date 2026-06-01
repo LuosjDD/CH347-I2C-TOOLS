@@ -1,0 +1,6 @@
+# Build output
+build/
+
+# i2c-tools source reference (not part of this project)
+i2c-tools-4.4/
+i2c-tools-4.4.tar.xz

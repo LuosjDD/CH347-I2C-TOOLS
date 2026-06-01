@@ -4,18 +4,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 static ULONG g_uIndex = 0;
-void i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *dat,
-                  uint8_t ndat) {
-  uint8_t out[3] = {0};
+/* Read a single byte from one register address.
+ * Uses separate write+read transactions (byte-data access) so it works
+ * with both standard I2C and SMBus devices that don't support block reads. */
+static BOOL i2c_read_byte(uint8_t addr, uint8_t reg, uint8_t *val) {
+  uint8_t out[2] = {0};
   out[0] = addr << 1;
   out[1] = reg;
-  CH347StreamI2C(g_uIndex, 2, out, ndat, dat);
+  return CH347StreamI2C(g_uIndex, 2, out, 1, val);
 }
 
-void i2c_dump( uint8_t addr, uint8_t *dat) {
-  const uint8_t step = 0x10;
-  for (int i = 0x00; i < 0xff; i += step) {
-    i2c_read_reg(addr, i, dat + i, step);
+void i2c_dump(uint8_t addr, uint8_t *dat) {
+  for (int i = 0x00; i < 0xff; i++) {
+    if (!i2c_read_byte(addr, (uint8_t)i, &dat[i])) {
+      dat[i] = 0xFF;  /* NACK -> show as -- */
+    }
   }
 }
 
